@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>صانع الفيديو المجاني</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Tajawal:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3efe6;--panel:#fffdf8;--ink:#1d2a2f;--mute:#5d6b70;--line:#d9d2c0;--acc:#0b6e6e;--acc2:#e0a100;--err:#b3261e;--btn:#fff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#14201f;--panel:#1c2b2a;--ink:#eef2ee;--mute:#9fb3b0;--line:#304341;--acc:#4fc3b4;--acc2:#f2c14e;--err:#ff8a80;--btn:#10201f;color-scheme:dark}}
+*{box-sizing:border-box}html,body{margin:0}[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:Cairo,"Segoe UI",Tahoma,system-ui,sans-serif;line-height:1.7;padding:max(16px,env(safe-area-inset-top)) 16px 50px}
+.wrap{max-width:780px;margin:0 auto}
+header{border-bottom:3px solid var(--acc2);padding-bottom:10px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:end}
+h1{margin:0;font-size:1.9rem}header p{margin:0;color:var(--mute)}
+.tools{display:flex;gap:6px}.tools .sec,.tools label{padding:4px 10px;font-size:.8rem}
+h2{margin:0;font-size:1.3rem}h3{margin:0;font-size:1rem;color:var(--acc)}
+.step{display:grid;gap:14px}
+section,.box{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;display:grid;gap:10px;align-content:start}
+.box{background:var(--bg)}
+label{font-size:.9rem;color:var(--mute);display:grid;gap:3px}
+textarea,input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px;width:100%}
+.box input,.box select,.box textarea{background:var(--panel)}
+textarea{min-height:180px;resize:vertical}
+input[type=color]{padding:2px;height:38px}input[type=range]{padding:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chk{display:flex;gap:8px;align-items:center}.chk input{width:auto}
+button,.btn{font:inherit;cursor:pointer;border:0;border-radius:4px;padding:10px 14px;background:var(--acc);color:var(--btn);font-weight:700;text-align:center}
+.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:wait}
+:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
+#stepper{display:flex;gap:6px;overflow-x:auto;margin:14px 0 6px}
+#stepper button{flex:1;min-width:104px;background:transparent;color:var(--mute);border:1px solid var(--line);font-size:.78rem;padding:6px 4px}
+#stepper button[aria-current=step]{background:var(--acc);color:var(--btn);border-color:var(--acc)}
+#msg{min-height:1.6em;color:var(--mute);margin-bottom:8px;font-weight:700}#msg.err{color:var(--err)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.choices,.row{grid-template-columns:1fr}}
+.choice{background:var(--panel);color:var(--ink);border:2px solid var(--line);text-align:right;padding:16px;display:grid;gap:4px}
+.choice b{font-size:1.1rem;color:var(--acc)}.choice span{font-weight:400;font-size:.85rem;color:var(--mute)}
+.choice[aria-pressed=true],.chip[aria-pressed=true]{border-color:var(--acc2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--panel);color:var(--ink);border:2px solid var(--line);padding:8px 12px;font-size:.9rem}
+.nav{display:flex;gap:10px;justify-content:space-between}
+details{border:1px dashed var(--line);border-radius:6px;padding:8px 12px}summary{cursor:pointer;font-weight:700}
+details>*{margin-top:10px}
+.note{font-size:.82rem;color:var(--mute);margin:0}
+#cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:6px;padding:8px;display:grid;gap:6px;background:var(--bg)}
+.th{aspect-ratio:16/9;background:#0004;border-radius:4px;display:grid;place-items:center;overflow:hidden;color:var(--mute);font-size:.85rem}
+.th img{width:100%;height:100%;object-fit:cover}
+.bt{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}.bt .sec{padding:4px;font-size:.78rem;display:block;text-align:center}
+#sum{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+#sum li{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:3px 0}#sum span{color:var(--mute)}
+canvas{width:100%;max-height:70vh;background:#000;border-radius:4px;object-fit:contain}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--acc2)}
+#st2{display:grid;gap:14px}#st2.audio #secSound{order:-1}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div><h1>صانع الفيديو المجاني</h1><p>ست خطوات بسيطة من فكرتك إلى فيديو جاهز، كله داخل متصفحك.</p></div>
+<div class="tools"><button type="button" class="sec" id="saveP">حفظ المشروع</button>
+<label class="btn sec" style="color:var(--ink)">فتح مشروع<input type="file" id="loadP" accept=".json" hidden></label>
+<button type="button" class="sec" id="restart">البدء من جديد</button></div>
+</header>
+<nav id="stepper" aria-label="الخطوات"></nav>
+<div id="msg" role="status"></div>
+<input type="hidden" id="path" data-s>
+
+<div class="step">
+<h2>ماذا تريد أن تفعل؟</h2>
+<div class="choices">
+<button type="button" class="choice" data-path="text"><b>عندي نص جاهز</b><span>ألصق نصك فيصبح كل سطر مشهدًا بصورة.</span></button>
+<button type="button" class="choice" data-path="audio"><b>عندي تسجيل صوتي</b><span>أستخرج النص العربي من الصوت، وأقسمه لجمل، وأجهز صورة لكل جملة.</span></button>
+<button type="button" class="choice" data-path="idea"><b>عندي فكرة فقط</b><span>اكتب الفكرة وأنا أكتب النص وأجهز الصور.</span></button>
+<button type="button" class="choice" data-path="images"><b>عندي صور</b><span>أعرض صورك بحركة وموسيقى وصوتك.</span></button>
+</div>
+<p class="note">كل شيء مجاني ويعمل في متصفحك، وإعداداتك تُحفظ تلقائيًا. يمكنك الرجوع وتغيير اختيارك في أي وقت.</p>
+</div>
+
+<div class="step" hidden>
+<h2>المحتوى والصوت</h2>
+<div id="st2">
+<section id="secContent"><h3>النص</h3>
+<div class="box" data-for="idea">
+<label>ما فكرة الفيديو؟<input id="topic" data-s placeholder="مثال: فوائد شرب الماء"></label>
+<div class="row"><label>عدد المشاهد<select id="nsc" data-s><option>4</option><option selected>6</option><option>8</option><option>10</option></select></label>
+<label>الأسلوب<select id="tone" data-s><option>قصة قصيرة</option><option>تعليمي ومبسّط</option><option>إعلان وترويج</option><option>تحفيزي</option><option>معلومات وحقائق</option></select></label></div>
+<button type="button" id="gen">اكتب لي النص بالذكاء الاصطناعي</button></div>
+<p class="note" data-for="audio">ارفع الصوت أو سجّله في الصندوق الأعلى، ثم اضغط «استخراج النص». سيظهر النص هنا لتراجعه.</p>
+<label><span id="lblT">النص</span><textarea id="script" data-s placeholder="كان يا ما كان، قطة صغيرة تحلم بالسفر | cute cartoon cat&#10;خرجت القطة تبحث عن مغامرة | cartoon cat in sunny village"></textarea></label>
+<p class="note">اختياري: اكتب بعد العلامة | وصفًا إنجليزيًا للصورة، فهو يعطي نتائج أدق.</p>
+</section>
+<section id="secSound"><h3>الصوت والموسيقى</h3>
+<label id="lblAm">هل تريد صوتًا في الفيديو؟
+<select id="audioMode" data-s><option value="tts">قراءة المتصفح (تُسمع في المعاينة فقط)</option><option value="voice">صوتي أنا: رفع ملف أو تسجيل (يدخل الفيديو)</option><option value="none">بدون صوت</option></select></label>
+<div id="vbox" class="box" hidden>
+<label>ارفع ملف صوت<input type="file" id="voiceFile" accept="audio/*"></label>
+<button type="button" class="sec" id="mic">أو سجّل بالميكروفون</button></div>
+<div id="sttBox" class="box" data-for="audio">
+<label>دقة التعرف على الكلام<select id="sttModel" data-s><option value="Xenova/whisper-base">أسرع (حوالي 150 ميجا)</option><option value="Xenova/whisper-small">أدق للعربية (حوالي 250 ميجا)</option></select></label>
+<button type="button" id="stt">استخراج النص من الصوت</button>
+<p class="note">يعمل داخل متصفحك بنموذج Whisper المجاني. التحميل الأول بطيء ثم يُحفظ، والتحويل قد يأخذ دقائق. يفضَّل ألا يتجاوز الصوت 5 دقائق.</p></div>
+<label>موسيقى خلفية (اختياري)<input type="file" id="musicFile" accept="audio/*"></label>
+<label>مستوى الموسيقى<input type="range" id="mvol" data-s min="0" max="100" value="25"></label>
+</section></div>
+<div class="nav"><button type="button" class="sec" data-nav="-1">رجوع</button><button type="button" data-nav="1">التالي</button></div>
+</div>
+
+<div class="step" hidden>
+<h2>الصور</h2>
+<section>
+<label>من أين تأتي الصور؟
+<select id="src" data-s><option value="ai">يولّدها الذكاء الاصطناعي (مجانًا بدون مفتاح)</option><option value="stock">أبحث في مواقع الصور المجانية</option><option value="none">سأرفع صوري بنفسي</option></select></label>
+<label id="lblSt">نمط الرسم
+<select id="style" data-s><option value="cartoon illustration, vibrant colors, children book style">كرتون</option><option value="anime style, detailed, soft lighting">أنمي</option><option value="realistic photo, cinematic lighting">واقعي</option><option value="flat vector illustration, minimal">رسم مسطح</option><option value="3d render, pixar style, cute">ثلاثي الأبعاد</option></select></label>
+<label id="lblPx">مفتاح Pixabay المجاني (اختياري، يُحفظ في متصفحك فقط)<input id="pxKey" data-s dir="ltr"></label>
+<p class="note" id="nStock">بدون مفتاح يُبحث في Wikimedia، وبعض صوره تتطلب ذكر المصدر. مع مفتاح Pixabay الاستخدام حر.</p>
+<label>رفع صورك دفعة واحدة (توزَّع على المشاهد بالترتيب)<input type="file" id="imgs" accept="image/*" multiple></label>
+<p class="note">يمكنك لاحقًا في خطوة المشاهد تغيير أي صورة على حدة.</p>
+</section>
+<div class="nav"><button type="button" class="sec" data-nav="-1">رجوع</button><button type="button" data-nav="1">التالي</button></div>
+</div>
+
+<div class="step" hidden>
+<h2>الشكل</h2>
+<section><h3>اختر قالبًا جاهزًا</h3>
+<div class="chips">
+<button type="button" class="chip" data-pre="yt">يوتيوب أفقي</button>
+<button type="button" class="chip" data-pre="reels">ريلز / تيك توك / شورتس</button>
+<button type="button" class="chip" data-pre="kids">حكاية أطفال</button>
+<button type="button" class="chip" data-pre="doc">وثائقي</button>
+<button type="button" class="chip" data-pre="edu">شرح تعليمي</button></div>
+<div class="row">
+<label>المقاس<select id="size" data-s><option value="1280x720">أفقي 16:9</option><option value="720x1280">طولي 9:16</option><option value="1024x1024">مربع</option></select></label>
+<label>حركة الصورة<select id="motion" data-s><option value="zoom">تقريب</option><option value="out">ابتعاد</option><option value="pan">تحريك جانبي</option><option value="none">ثابتة</option></select></label>
+<label>الانتقال بين المشاهد<select id="tr" data-s><option value="fade">تلاشي</option><option value="slide">انزلاق</option><option value="none">بدون</option></select></label>
+<label class="chk"><input type="checkbox" id="subs" data-s checked> إظهار النص على الفيديو</label></div>
+<label>عنوان افتتاحي (يظهر أول ثلاث ثوانٍ، اختياري)<input id="title" data-s></label>
+<label>علامة مائية (اسم قناتك مثلًا، اختياري)<input id="wm" data-s></label>
+<details><summary>خيارات متقدمة للنص</summary>
+<div class="row">
+<label>الخط<select id="font" data-s><option>Cairo</option><option>Tajawal</option><option>Tahoma</option></select></label>
+<label>موضع النص<select id="pos" data-s><option value="bot">أسفل</option><option value="mid">وسط</option><option value="top">أعلى</option></select></label>
+<label>لون النص<input type="color" id="col" data-s value="#ffffff"></label>
+<label>حجم النص<input type="range" id="fsz" data-s min="3" max="9" step=".5" value="5"></label>
+<label>عتامة خلفية النص<input type="range" id="bg" data-s min="0" max="90" value="55"></label></div></details>
+</section>
+<div class="nav"><button type="button" class="sec" data-nav="-1">رجوع</button><button type="button" data-nav="1">التالي</button></div>
+</div>
+
+<div class="step" hidden>
+<h2>المشاهد</h2>
+<section>
+<p class="note">هنا تراجع كل مشهد: عدّل نصه أو وصف صورته، غيّر الصورة، ارفع صورتك، أو احذف المشهد.</p>
+<div class="row"><button type="button" id="build">إعادة تجهيز الصور</button><button type="button" class="sec" id="addS">إضافة مشهد</button></div>
+<div id="cards"></div>
+<button type="button" class="sec" id="clr">مسح كل الصور وإعادة جلبها</button>
+</section>
+<div class="nav"><button type="button" class="sec" data-nav="-1">رجوع</button><button type="button" data-nav="1">التالي</button></div>
+</div>
+
+<div class="step" hidden>
+<h2>الإنشاء</h2>
+<section><h3>ملخص اختياراتك</h3><ul id="sum"></ul></section>
+<section>
+<div class="row"><button type="button" class="sec" id="prev">معاينة سريعة</button><button type="button" id="rec">إنشاء الفيديو</button></div>
+<button type="button" class="sec" id="stop" disabled>إيقاف</button>
+<div class="bar"><i id="bar"></i></div>
+<canvas id="cv" width="1280" height="720"></canvas>
+<div id="out"></div>
+<p class="note">الناتج MP4 إن دعمه متصفحك وإلا WebM. أبقِ التبويب مفتوحًا أثناء التسجيل. قراءة المتصفح الآلية لا تدخل الفيديو، لذلك استخدم صوتك أو صوتًا مرفوعًا.</p>
+</section>
+<div class="nav"><button type="button" class="sec" data-nav="-1">رجوع للمشاهد</button></div>
+</div>
+</div>
+
+<script>
+
+const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d');
+let tm=[],tmFor='',scenes=[],voice=null,music=null,last='',busy=false,stop=false,O={};
+const msg=(t,e)=>{$('msg').textContent=t;$('msg').className=e?'err':''};
+const esc=t=>t.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+/* حفظ الإعدادات */
+const S=[...document.querySelectorAll('[data-s]')];
+const dump=()=>Object.fromEntries(S.map(e=>[e.id,e.type==='checkbox'?e.checked:e.value]));
+const load=o=>S.forEach(e=>{if(o&&e.id in o){e.type==='checkbox'?e.checked=o[e.id]:e.value=o[e.id]}});
+const save=()=>{try{localStorage.setItem('vm',JSON.stringify(dump()))}catch{}};
+try{load(JSON.parse(localStorage.getItem('vm')))}catch{}
+S.forEach(e=>e.addEventListener('change',save));$('script').addEventListener('input',save);
+$('saveP').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(dump())]));a.download='project.json';a.click()};
+$('loadP').onchange=async e=>{try{load(JSON.parse(await e.target.files[0].text()));save();setSize();ui();msg('تم فتح المشروع، اضغط جهّز المشاهد.')}catch{msg('ملف مشروع غير صالح',1)}};
+function ui(){const p=$('path').value,m=$('audioMode').value;
+  $('vbox').hidden=m!=='voice';$('lblAm').hidden=p==='audio';
+  document.querySelectorAll('[data-for]').forEach(e=>e.hidden=!e.dataset.for.split(' ').includes(p));
+  document.querySelectorAll('[data-path]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.path===p));
+  $('lblPx').hidden=$('nStock').hidden=$('src').value!=='stock';$('lblSt').hidden=$('src').value!=='ai';
+  $('st2').className=p==='audio'?'audio':'';
+  $('lblT').textContent={text:'اكتب نصك (كل سطر = مشهد)',audio:'النص المستخرج من الصوت (راجعه وعدّله)',idea:'النص المكتوب (راجعه وعدّله)',images:'تعليق لكل صورة (اختياري، كل سطر = مشهد)'}[p]||'النص'}
+const setSize=()=>{const[w,h]=$('size').value.split('x').map(Number);cv.width=w;cv.height=h;idle()};
+function idle(){ctx.fillStyle='#14201f';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#9fb3b0';ctx.font='32px sans-serif';ctx.textAlign='center';ctx.fillText('اضغط معاينة',cv.width/2,cv.height/2)}
+$('audioMode').onchange=ui;$('src').onchange=ui;$('size').onchange=setSize;ui();setSize();
+/* الصوت */
+async function decode(b){const a=new AudioContext();const r=await a.decodeAudioData(await b.arrayBuffer());a.close();return r}
+$('voiceFile').onchange=async e=>{try{voice=await decode(e.target.files[0]);msg('صوت جاهز ('+voice.duration.toFixed(1)+' ث)')}catch{msg('تعذر قراءة الصوت',1)}};
+$('musicFile').onchange=async e=>{try{music=await decode(e.target.files[0]);msg('الموسيقى جاهزة')}catch{msg('تعذر قراءة الموسيقى',1)}};
+let mr,mch=[];
+$('mic').onclick=async()=>{
+  if(mr&&mr.state==='recording'){mr.stop();return}
+  try{const st=await navigator.mediaDevices.getUserMedia({audio:true});mch=[];mr=new MediaRecorder(st);
+    mr.ondataavailable=e=>mch.push(e.data);
+    mr.onstop=async()=>{st.getTracks().forEach(t=>t.stop());voice=await decode(new Blob(mch));$('mic').textContent='إعادة التسجيل';msg('تم حفظ تسجيلك ('+voice.duration.toFixed(1)+' ث)')};
+    mr.start();$('mic').textContent='إيقاف التسجيل'}catch{msg('تعذر الوصول إلى الميكروفون',1)}};
+/* الصور */
+const loadImg=(src,cors)=>new Promise((res,rej)=>{const i=new Image();if(cors)i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=()=>rej(0);i.src=src});
+const fileImg=f=>loadImg(URL.createObjectURL(f));
+async function stockUrls(q){
+  const k=$('pxKey').value.trim();
+  if(k){const r=await(await fetch(`https://pixabay.com/api/?key=${k}&q=${encodeURIComponent(q)}&image_type=photo&per_page=12&safesearch=true`)).json();return r.hits.map(h=>h.largeImageURL)}
+  const r=await(await fetch(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(q+' filetype:bitmap')}&gsrlimit=12&prop=imageinfo&iiprop=url&iiurlwidth=1280&format=json&origin=*`)).json();
+  return Object.values(r.query?.pages||{}).map(p=>p.imageinfo?.[0]?.thumburl).filter(Boolean)}
+async function fetchImg(s){
+  const m=$('src').value,q=s.prompt||s.text;
+  if(m==='ai'){const[W,H]=$('size').value.split('x');
+    return loadImg(`https://image.pollinations.ai/prompt/${encodeURIComponent(q+', '+$('style').value)}?width=${W}&height=${H}&nologo=true&seed=${Math.random()*1e5|0}`,true)}
+  if(m==='stock'){const u=await stockUrls(q);if(!u.length)throw 0;s.n=(s.n||0)+1;return loadImg(u[(s.n-1)%u.length],true)}
+  return null}
+const thumb=i=>{const t=document.querySelector(`.card[data-i="${i}"] .th`);if(t)t.innerHTML=scenes[i].img?`<img src="${scenes[i].img.src}" alt="">`:'<span>بدون صورة</span>'};
+async function setImg(i){
+  const s=scenes[i],t=document.querySelector(`.card[data-i="${i}"] .th`);if(t)t.innerHTML='<span>جاري التحميل...</span>';
+  s.tried=1;try{s.img=await fetchImg(s)||s.img}catch{msg('تعذر جلب صورة المشهد '+(i+1)+'، جرّب «صورة جديدة» أو ارفع صورة',1)}
+  thumb(i)}
+function render(){
+  $('cards').innerHTML=scenes.map((s,i)=>`<div class="card" data-i="${i}"><div class="th"></div><input class="t" value="${esc(s.text)}" aria-label="نص المشهد"><input class="p" value="${esc(s.prompt)}" placeholder="وصف الصورة أو كلمات البحث" aria-label="وصف الصورة"><div class="bt"><button type="button" class="sec re">صورة جديدة</button><label class="sec up">رفع<input type="file" accept="image/*" hidden></label><button type="button" class="sec del">حذف</button></div></div>`).join('');
+  scenes.forEach((_,i)=>thumb(i))}
+async function build(noFetch){
+  const p=$('script').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const[a,b]=l.split('|');return{text:a.trim(),prompt:(b||'').trim()}});
+  if(!p.length)throw new Error('اكتب نصًا أولًا');
+  const old=new Map(scenes.map(s=>[s.text+'|'+s.prompt,s]));
+  const tf=$('script').value===tmFor;scenes=p.map((s,i)=>{const o=old.get(s.text+'|'+s.prompt)||s;o.t0=tf?tm[i]:undefined;return o});last=$('script').value;render();
+  if(!noFetch)for(let i=0;i<scenes.length;i++){if(!scenes[i].img&&!scenes[i].tried&&$('src').value!=='none'){msg(`جاري جلب الصورة ${i+1} من ${scenes.length}...`);await setImg(i)}}
+  msg('المشاهد جاهزة.')}
+$('cards').addEventListener('input',e=>{const c=e.target.closest('.card');if(!c)return;const s=scenes[c.dataset.i];if(e.target.classList.contains('t'))s.text=e.target.value;if(e.target.classList.contains('p'))s.prompt=e.target.value;sync()});
+$('cards').addEventListener('click',e=>{if(e.target.classList.contains('re'))setImg(+e.target.closest('.card').dataset.i);if(e.target.classList.contains('del')){scenes.splice(+e.target.closest('.card').dataset.i,1);sync();render()}});
+$('cards').addEventListener('change',async e=>{if(e.target.type==='file'&&e.target.files[0]){const i=+e.target.closest('.card').dataset.i;scenes[i].img=await fileImg(e.target.files[0]);thumb(i)}});
+$('imgs').onchange=async e=>{pad(e.target.files.length);if(!scenes.length||$('script').value!==last)await build(true);const f=[...e.target.files];for(let i=0;i<scenes.length&&i<f.length;i++){scenes[i].img=await fileImg(f[i]);thumb(i)}};
+$('build').onclick=async()=>{if(busy)return;busy=true;try{await build()}catch(e){msg(e.message,1)}busy=false};
+$('clr').onclick=()=>{scenes.forEach(s=>{s.img=null;s.tried=0});render()};
+/* استخراج النص من الصوت */
+let pollOK=true;
+const tmo=(u,ms=9000)=>{const c=new AbortController();setTimeout(()=>c.abort(),ms);return fetch(u,{signal:c.signal})};
+async function toPrompt(t){
+  if(pollOK)try{const x=(await(await tmo('https://text.pollinations.ai/'+encodeURIComponent('Write one short English image prompt (max 20 words, only a visual description, no quotes) illustrating this Arabic sentence: '+t))).text()).trim();if(x&&x.length<300&&x[0]!=='{')return x}catch{pollOK=false}
+  try{return(await(await tmo('https://api.mymemory.translated.net/get?q='+encodeURIComponent(t)+'&langpair=ar|en')).json()).responseData.translatedText}catch{}
+  return ''}
+function toSentences(ch,total){
+  const P=[];
+  for(const c of ch){const a=c.timestamp[0]||0,b=c.timestamp[1]??total,parts=(c.text.trim().match(/[^.!؟?۔]+[.!؟?۔]*/g)||[]).map(x=>x.trim()).filter(Boolean),L=parts.reduce((n,x)=>n+x.length,0)||1;
+    let t=a;parts.forEach(x=>{P.push({text:x,t0:t});t+=(b-a)*x.length/L})}
+  const M=[];for(const p of P){const l=M[M.length-1];if(l&&p.t0-l.t0<2.5){l.text+=' '+p.text}else M.push({...p})}
+  if(M.length>1&&total-M[M.length-1].t0<1.5){const l=M.pop();M[M.length-1].text+=' '+l.text}
+  return M}
+$('stt').onclick=async()=>{
+  if(busy)return;if(!voice)return msg('ارفع ملف الصوت أو سجّله أولًا',1);
+  busy=true;lock(true);
+  try{
+    msg('جاري تحميل محرك التعرف على الكلام (مرة واحدة فقط)...');
+    const{pipeline,env}=await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+    env.allowLocalModels=false;
+    const asr=await pipeline('automatic-speech-recognition',$('sttModel').value,{progress_callback:p=>{if(p.status==='progress')msg('تحميل النموذج '+(p.progress|0)+'%')}});
+    msg('جاري تحويل الصوت إلى نص... قد يستغرق عدة دقائق، أبقِ الصفحة مفتوحة');
+    const oc=new OfflineAudioContext(1,Math.ceil(voice.duration*16000),16000),sr=oc.createBufferSource();sr.buffer=voice;sr.connect(oc.destination);sr.start();
+    const pcm=(await oc.startRendering()).getChannelData(0);
+    const r=await asr(pcm,{language:'arabic',task:'transcribe',chunk_length_s:30,stride_length_s:5,return_timestamps:true});
+    const M=toSentences(r.chunks||[{text:r.text,timestamp:[0,voice.duration]}],voice.duration);
+    if(!M.length)throw new Error('لم يُستخرج نص. تأكد أن الصوت واضح وبه كلام.');
+    for(let i=0;i<M.length;i++){msg(`تجهيز وصف الصورة ${i+1} من ${M.length}...`);M[i].p=await toPrompt(M[i].text)}
+    $('script').value=M.map(m=>m.text+(m.p?' | '+m.p:'')).join('\n');
+    tm=M.map(m=>m.t0);tm[0]=0;tmFor=$('script').value;save();
+    scenes=[];await build();
+    msg('تم استخراج '+M.length+' مشهد وتجهيز صورها. راجع النص في الأعلى ثم اضغط «التالي».')
+  }catch(e){msg(e.message||'فشل الاستخراج. جرّب النموذج الأسرع أو صوتًا أقصر.',1)}
+  busy=false;lock(false)};
+/* الرسم */
+function wrap(t,mw){const w=t.split(' '),L=[];let c='';for(const x of w){const n=c?c+' '+x:x;if(ctx.measureText(n).width>mw&&c){L.push(c);c=x}else c=n}if(c)L.push(c);return L}
+const GR=['#0b6e6e','#7a3b69','#b5651d','#2f4b7c'];
+function sub(s){
+  const W=cv.width,H=cv.height,fs=Math.round(Math.min(W,H)*O.fs/100);
+  ctx.font=`700 ${fs}px ${O.font}`;ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+  const L=wrap(s.text,W*.86),lh=fs*1.5,bh=L.length*lh+fs*.5;
+  const y=O.pos==='top'?H*.06:O.pos==='mid'?(H-bh)/2:H-bh-H*.06;
+  if(O.bg>0){ctx.fillStyle=`rgba(0,0,0,${O.bg/100})`;ctx.fillRect(W*.04,y,W*.92,bh)}else{ctx.shadowColor='#000';ctx.shadowBlur=10}
+  ctx.fillStyle=O.col;L.forEach((l,i)=>ctx.fillText(l,W/2,y+fs*.25+lh*(i+.5)));ctx.shadowBlur=0}
+function drawScene(i,p,a,dx){
+  const s=scenes[i],W=cv.width,H=cv.height,im=s.img;
+  ctx.save();ctx.translate(dx,0);ctx.globalAlpha=a;
+  if(im){const z=O.mo==='zoom'?1+.15*p:O.mo==='out'?1.15-.15*p:1.1,x=O.mo==='pan'?(p-.5)*.08*W:0;
+    const r=Math.max(W/im.width,H/im.height)*z,w=im.width*r,h=im.height*r;ctx.drawImage(im,(W-w)/2+x,(H-h)/2,w,h)}
+  else{const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,GR[i%4]);g.addColorStop(1,'#14201f');ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}
+  if(O.subs)sub(s);ctx.restore()}
+function drawAt(t,total){
+  const W=cv.width,H=cv.height;ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  let i=scenes.findIndex(s=>t>=s.start&&t<s.start+s.dur);if(i<0)i=scenes.length-1;
+  const s=scenes[i],q=t-s.start,p=Math.min(1,q/s.dur),f=Math.min(.6,s.dur/2);
+  if(i>0&&q<f&&O.tr!=='none'){const k=q/f,sl=O.tr==='slide';
+    drawScene(i-1,1,1,sl?k*W:0);drawScene(i,p,sl?1:k,sl?(k-1)*W:0)}
+  else drawScene(i,p,1,0);
+  if(O.title&&t<3){const a=t<2.4?1:1-(t-2.4)/.6,fs=Math.round(Math.min(W,H)*.08);
+    ctx.globalAlpha=a*.55;ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);ctx.globalAlpha=a;
+    ctx.font=`700 ${fs}px ${O.font}`;ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';
+    wrap(O.title,W*.85).forEach((l,n,A)=>ctx.fillText(l,W/2,H/2+(n-(A.length-1)/2)*fs*1.4));ctx.globalAlpha=1}
+  if(O.wm){ctx.globalAlpha=.65;ctx.font=`700 ${Math.round(Math.min(W,H)*.03)}px ${O.font}`;ctx.direction='rtl';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle='#fff';ctx.shadowColor='#000';ctx.shadowBlur=6;ctx.fillText(O.wm,W*.03,H*.03);ctx.shadowBlur=0;ctx.globalAlpha=1}}
+/* التشغيل والتسجيل */
+const lock=b=>{['prev','rec','build','stt','gen','addS','clr'].forEach(k=>$(k).disabled=b);$('stop').disabled=!b};
+$('stop').onclick=()=>{stop=true};
+async function run(rec){
+  if(busy)return;busy=true;lock(true);stop=false;$('out').innerHTML='';$('bar').style.width='0';
+  try{
+    if(!scenes.length||$('script').value!==last)await build();
+    else for(let i=0;i<scenes.length;i++)if(!scenes[i].img&&!scenes[i].tried&&$('src').value!=='none')await setImg(i);
+    const mode=$('audioMode').value;if(mode==='voice'&&!voice)throw new Error('ارفع ملف الصوت أو سجّل صوتك أولًا');
+    O={mo:$('motion').value,tr:$('tr').value,pos:$('pos').value,fs:+$('fsz').value,col:$('col').value,bg:+$('bg').value,font:`${$('font').value},"Segoe UI",Tahoma,sans-serif`,subs:$('subs').checked,title:$('title').value.trim(),wm:$('wm').value.trim()};
+    await document.fonts.load(`700 24px ${$('font').value}`).catch(()=>{});
+    const total=mode==='voice'?voice.duration+.4:Math.max(scenes.length*3.5,scenes.reduce((a,s)=>a+s.text.length,0)/13);
+    if(mode==='voice'&&scenes.every(s=>typeof s.t0==='number'))scenes.forEach((s,i)=>{s.start=i?s.t0:0;s.dur=Math.max(.5,(i<scenes.length-1?scenes[i+1].t0:total)-s.start)});
+    else{const w=scenes.map(s=>Math.max(s.text.length,12)),sum=w.reduce((a,b)=>a+b,0);let tt=0;
+    scenes.forEach((s,i)=>{s.start=tt;s.dur=total*w[i]/sum;tt+=s.dur})}
+    let a,dest,recr,chunks=[],mime='';
+    if(mode==='voice'||music){
+      a=new AudioContext();await a.resume();dest=rec?a.createMediaStreamDestination():null;const out=rec?dest:a.destination;
+      if(mode==='voice'){const s=a.createBufferSource();s.buffer=voice;s.connect(out);s.start()}
+      if(music){const s=a.createBufferSource(),g=a.createGain();s.buffer=music;s.loop=true;g.gain.value=$('mvol').value/100;s.connect(g).connect(out);s.start()}}
+    if(rec){
+      const st=cv.captureStream(30);if(dest)dest.stream.getAudioTracks().forEach(t=>st.addTrack(t));
+      mime=['video/mp4;codecs=avc1,mp4a.40.2','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m=>MediaRecorder.isTypeSupported(m));
+      recr=new MediaRecorder(st,{mimeType:mime,videoBitsPerSecond:5e6});recr.ondataavailable=e=>e.data.size&&chunks.push(e.data);recr.start(500)}
+    else if(mode==='tts'){speechSynthesis.cancel();scenes.forEach(s=>{const u=new SpeechSynthesisUtterance(s.text);u.lang='ar-SA';speechSynthesis.speak(u)})}
+    msg(rec?'جاري تسجيل الفيديو... لا تغلق التبويب':'جاري المعاينة...');
+    const t0=performance.now();
+    await new Promise(done=>{(function loop(){const t=(performance.now()-t0)/1000;drawAt(Math.min(t,total-.001),total);$('bar').style.width=Math.min(100,t/total*100)+'%';t<total&&!stop?requestAnimationFrame(loop):done()})()});
+    speechSynthesis.cancel();if(a)a.close();
+    if(rec){await new Promise(r=>{recr.onstop=r;recr.stop()});
+      const ext=mime.startsWith('video/mp4')?'mp4':'webm',url=URL.createObjectURL(new Blob(chunks,{type:mime.split(';')[0]}));
+      $('out').innerHTML=`<video controls playsinline src="${url}" style="width:100%;margin-top:10px;border-radius:4px"></video><p><a href="${url}" download="video.${ext}"><button type="button">تنزيل الفيديو (${ext})</button></a></p>`;
+      msg(stop?'تم الإيقاف وحفظ ما سُجّل.':'تم إنشاء الفيديو.')}
+    else msg('انتهت المعاينة.')
+  }catch(e){msg(e.message||'حدث خطأ',1);speechSynthesis.cancel()}
+  busy=false;lock(false)}
+$('prev').onclick=()=>run(false);$('rec').onclick=()=>run(true);
+/* المعالج */
+const NAMES=['الهدف','المحتوى والصوت','الصور','الشكل','المشاهد','الإنشاء'];
+let cur=0;
+$('stepper').innerHTML=NAMES.map((n,i)=>`<button type="button" data-go="${i}">${i+1}. ${n}</button>`).join('');
+function sync(){
+  $('script').value=scenes.map(s=>s.text+(s.prompt?' | '+s.prompt:'')).join('\n');last=$('script').value;
+  if(scenes.length&&scenes.every(s=>typeof s.t0==='number')){tm=scenes.map(s=>s.t0);tmFor=last}save()}
+function pad(n){if($('path').value!=='images')return;const L=$('script').value.split('\n').filter(x=>x.trim());while(L.length<n)L.push('مشهد '+(L.length+1));$('script').value=L.join('\n');save()}
+function setPath(p){
+  $('path').value=p;
+  if(p==='audio')$('audioMode').value='voice';
+  if(p==='images'){$('src').value='none';$('subs').checked=false;if($('audioMode').value==='voice'&&!voice)$('audioMode').value='none'}
+  else{$('subs').checked=true;if($('src').value==='none')$('src').value='ai';if(p!=='audio'&&$('audioMode').value==='voice'&&!voice)$('audioMode').value='tts'}
+  save();ui()}
+function ok(n){
+  const p=$('path').value,t=$('script').value.trim();
+  if(n===0&&!p){msg('اختر ما تريد فعله أولًا',1);return false}
+  if(n===1){
+    if(p==='audio'&&!t){msg('ارفع الصوت واضغط «استخراج النص» أولًا',1);return false}
+    if(p!=='images'&&!t){msg(p==='idea'?'اكتب الفكرة واضغط «اكتب لي النص»، أو اكتب النص بنفسك':'اكتب النص أولًا',1);return false}
+    if($('audioMode').value==='voice'&&!voice){msg('ارفع ملف الصوت أو سجّل صوتك، أو غيّر اختيار الصوت',1);return false}}
+  return true}
+async function go(n){
+  if(busy)return;msg('');n=Math.max(0,Math.min(5,n));
+  for(let i=cur;i<n;i++)if(!ok(i)){n=i;break}
+  cur=n;
+  document.querySelectorAll('.step').forEach((e,i)=>e.hidden=i!==cur);
+  document.querySelectorAll('#stepper button').forEach((b,i)=>{if(i===cur)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
+  window.scrollTo({top:0});
+  if(cur===4&&$('script').value.trim()&&$('script').value!==last){busy=true;lock(true);try{await build()}catch(e){msg(e.message,1)}busy=false;lock(false)}
+  if(cur===5)summary()}
+$('stepper').onclick=e=>{const b=e.target.closest('[data-go]');if(b)go(+b.dataset.go)};
+document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>go(cur+ +b.dataset.nav));
+document.querySelectorAll('[data-path]').forEach(b=>b.onclick=()=>{setPath(b.dataset.path);go(1)});
+function summary(){
+  const n=scenes.length||$('script').value.split('\n').filter(x=>x.trim()).length,mode=$('audioMode').value;
+  const dur=mode==='voice'&&voice?voice.duration:Math.max(n*3.5,$('script').value.length/13);
+  const R=[['عدد المشاهد',n],['المدة التقريبية',Math.round(dur)+' ثانية'],
+    ['الصوت',{tts:'قراءة المتصفح (لن تدخل الفيديو)',voice:'صوتك (يدخل الفيديو)',none:'بدون صوت'}[mode]+(music?' + موسيقى':'')],
+    ['الصور',scenes.filter(s=>s.img).length+' من '+n+' جاهزة'],['المقاس',$('size').selectedOptions[0].text],['الانتقال',$('tr').selectedOptions[0].text]];
+  $('sum').innerHTML=R.map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join('')}
+const PRE={yt:{size:'1280x720',motion:'zoom',tr:'fade',pos:'bot',fsz:5,bg:55},
+  reels:{size:'720x1280',motion:'zoom',tr:'slide',pos:'mid',fsz:6.5,bg:0},
+  kids:{size:'1280x720',motion:'pan',tr:'slide',pos:'bot',fsz:6,bg:60,font:'Cairo',style:'cartoon illustration, vibrant colors, children book style'},
+  doc:{size:'1280x720',motion:'out',tr:'fade',pos:'bot',fsz:4.5,bg:65,style:'realistic photo, cinematic lighting'},
+  edu:{size:'1280x720',motion:'none',tr:'none',pos:'mid',fsz:6,bg:70,style:'flat vector illustration, minimal'}};
+document.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>{
+  const p=PRE[b.dataset.pre];for(const k in p)$(k).value=p[k];save();setSize();ui();
+  document.querySelectorAll('[data-pre]').forEach(x=>x.setAttribute('aria-pressed',x===b));msg('تم تطبيق القالب، ويمكنك تعديل أي خيار بعده.')});
+$('addS').onclick=()=>{scenes.push({text:'مشهد جديد',prompt:''});sync();render()};
+$('restart').onclick=()=>{if(confirm('سيُمسح كل ما كتبته وإعداداتك. متأكد؟')){try{localStorage.removeItem('vm')}catch{}location.reload()}};
+$('gen').onclick=async()=>{
+  const t=$('topic').value.trim(),n=+$('nsc').value;if(!t)return msg('اكتب فكرة الفيديو أولًا',1);
+  if(busy)return;busy=true;lock(true);msg('جاري كتابة النص...');
+  try{
+    const q=`اكتب نص فيديو باللغة العربية عن: ${t}. الأسلوب: ${$('tone').value}. اكتب ${n} أسطر بالضبط، كل سطر جملة عربية قصيرة وواضحة (حتى 20 كلمة) ثم العلامة | ثم وصف إنجليزي قصير للصورة المناسبة. بدون ترقيم أو عناوين أو أي شرح.`;
+    const x=await(await tmo('https://text.pollinations.ai/'+encodeURIComponent(q),40000)).text();
+    const L=x.split('\n').map(l=>l.replace(/^[\s\d\-\*\.\)•]+/,'').trim()).filter(l=>l.includes('|')).slice(0,n);
+    if(L.length<2)throw 0;
+    $('script').value=L.join('\n');save();msg('تمت كتابة النص. راجعه وعدّله إن أردت ثم اضغط «التالي».')
+  }catch{msg('تعذر توليد النص الآن (الخدمة المجانية مشغولة). حاول بعد قليل أو اكتب النص بنفسك.',1)}
+  busy=false;lock(false)};
+ui();
+</script>
+</body>
+</html>
