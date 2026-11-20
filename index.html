@@ -53,7 +53,7 @@ details>*{margin-top:10px}
 #sum li{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:3px 0}#sum span{color:var(--mute)}
 canvas{width:100%;max-height:70vh;background:#000;border-radius:4px;object-fit:contain}
 .bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--acc2)}
-#st2{display:grid;gap:14px}#st2.audio #secSound{order:-1}
+#st2{display:grid;gap:14px}#gBox{order:-2}#st2.audio #secSound{order:-1}
 </style>
 </head>
 <body>
@@ -82,6 +82,10 @@ canvas{width:100%;max-height:70vh;background:#000;border-radius:4px;object-fit:c
 <div class="step" hidden>
 <h2>المحتوى والصوت</h2>
 <div id="st2">
+<section id="gBox" data-for="audio idea"><h3>Google Gemini (مجاني وموصى به)</h3>
+<p class="note">يفهم العربي واللهجة المصرية بدقة عالية، ويكتب أوصاف الصور بالإنجليزية. احصل على مفتاح مجاني من <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> خلال دقيقة. يُحفظ المفتاح في متصفحك فقط، ويُرسَل النص أو الصوت إلى Google عند الاستخدام.</p>
+<label>مفتاح Gemini<input id="gKey" data-s dir="ltr" placeholder="AIza..."></label>
+<details><summary>اسم النموذج</summary><label>عدّله هنا إن تغيّر اسم النموذج لاحقًا<input id="gModel" data-s dir="ltr" value="gemini-flash-latest"></label></details></section>
 <section id="secContent"><h3>النص</h3>
 <div class="box" data-for="idea">
 <label>ما فكرة الفيديو؟<input id="topic" data-s placeholder="مثال: فوائد شرب الماء"></label>
@@ -99,9 +103,14 @@ canvas{width:100%;max-height:70vh;background:#000;border-radius:4px;object-fit:c
 <label>ارفع ملف صوت<input type="file" id="voiceFile" accept="audio/*"></label>
 <button type="button" class="sec" id="mic">أو سجّل بالميكروفون</button></div>
 <div id="sttBox" class="box" data-for="audio">
-<label>دقة التعرف على الكلام<select id="sttModel" data-s><option value="Xenova/whisper-base">أسرع (حوالي 150 ميجا)</option><option value="Xenova/whisper-small">أدق للعربية (حوالي 250 ميجا)</option></select></label>
-<button type="button" id="stt">استخراج النص من الصوت</button>
-<p class="note">يعمل داخل متصفحك بنموذج Whisper المجاني. التحميل الأول بطيء ثم يُحفظ، والتحويل قد يأخذ دقائق. يفضَّل ألا يتجاوز الصوت 5 دقائق.</p></div>
+<label>طريقة استخراج النص
+<select id="sttEng" data-s><option value="gem">Google Gemini: الأدق، يقبل ملفات الصوت (يحتاج مفتاحًا مجانيًا)</option><option value="live">Google عبر Chrome: تكلّم وأنا أكتب (بدون مفتاح)</option><option value="whisper">Whisper داخل المتصفح: بدون مفتاح، أقل دقة للعربية</option></select></label>
+<label id="lblWh">دقة Whisper<select id="sttModel" data-s><option value="Xenova/whisper-base">أسرع (حوالي 150 ميجا)</option><option value="Xenova/whisper-small">أدق للعربية (حوالي 250 ميجا)</option></select></label>
+<div id="liveBox" hidden><label>اللهجة<select id="liveLang" data-s><option value="ar-EG">مصرية</option><option value="ar-SA">فصحى / خليجية</option><option value="ar-LB">شامية</option><option value="ar-MA">مغربية</option></select></label>
+<button type="button" id="live">ابدأ التكلم (يكتب ويسجّل)</button><p class="note" id="liveTxt"></p>
+<p class="note">تكلّم مباشرة في الميكروفون: Chrome يستخدم تعرف Google على الكلام، ويُسجَّل صوتك ليدخل الفيديو. لا يقبل ملفات جاهزة.</p></div>
+<button type="button" id="stt">استخراج النص من الصوت المرفوع</button>
+<p class="note">الترتيب من حيث الدقة: Gemini ثم Google عبر Chrome ثم Whisper. التحويل الأول لـ Whisper يحمّل النموذج ويأخذ وقتًا.</p></div>
 <label>موسيقى خلفية (اختياري)<input type="file" id="musicFile" accept="audio/*"></label>
 <label>مستوى الموسيقى<input type="range" id="mvol" data-s min="0" max="100" value="25"></label>
 </section></div>
@@ -117,6 +126,8 @@ canvas{width:100%;max-height:70vh;background:#000;border-radius:4px;object-fit:c
 <select id="style" data-s><option value="cartoon illustration, vibrant colors, children book style">كرتون</option><option value="anime style, detailed, soft lighting">أنمي</option><option value="realistic photo, cinematic lighting">واقعي</option><option value="flat vector illustration, minimal">رسم مسطح</option><option value="3d render, pixar style, cute">ثلاثي الأبعاد</option></select></label>
 <label id="lblPx">مفتاح Pixabay المجاني (اختياري، يُحفظ في متصفحك فقط)<input id="pxKey" data-s dir="ltr"></label>
 <p class="note" id="nStock">بدون مفتاح يُبحث في Wikimedia، وبعض صوره تتطلب ذكر المصدر. مع مفتاح Pixabay الاستخدام حر.</p>
+<p class="note" id="nAI">بدون مفتاح، الخدمة المجانية تولّد صورة كل 40 ثانية تقريبًا (6 مشاهد ≈ 4 دقائق). للسرعة استخدم صور Pixabay أو أضف مفتاح Pollinations.</p>
+<label id="lblPl">مفتاح Pollinations (اختياري، يزيل الانتظار؛ من enter.pollinations.ai)<input id="plKey" data-s dir="ltr"></label>
 <label>رفع صورك دفعة واحدة (توزَّع على المشاهد بالترتيب)<input type="file" id="imgs" accept="image/*" multiple></label>
 <p class="note">يمكنك لاحقًا في خطوة المشاهد تغيير أي صورة على حدة.</p>
 </section>
@@ -154,9 +165,9 @@ canvas{width:100%;max-height:70vh;background:#000;border-radius:4px;object-fit:c
 <h2>المشاهد</h2>
 <section>
 <p class="note">هنا تراجع كل مشهد: عدّل نصه أو وصف صورته، غيّر الصورة، ارفع صورتك، أو احذف المشهد.</p>
-<div class="row"><button type="button" id="build">إعادة تجهيز الصور</button><button type="button" class="sec" id="addS">إضافة مشهد</button></div>
+<div class="row"><button type="button" id="build">جلب الصور الناقصة</button><button type="button" class="sec" id="addS">إضافة مشهد</button></div>
 <div id="cards"></div>
-<button type="button" class="sec" id="clr">مسح كل الصور وإعادة جلبها</button>
+<button type="button" class="sec" id="clr">مسح كل الصور</button>
 </section>
 <div class="nav"><button type="button" class="sec" data-nav="-1">رجوع</button><button type="button" data-nav="1">التالي</button></div>
 </div>
@@ -189,7 +200,7 @@ const load=o=>S.forEach(e=>{if(o&&e.id in o){e.type==='checkbox'?e.checked=o[e.i
 const save=()=>{try{localStorage.setItem('vm',JSON.stringify(dump()))}catch{}};
 try{load(JSON.parse(localStorage.getItem('vm')))}catch{}
 S.forEach(e=>e.addEventListener('change',save));$('script').addEventListener('input',save);
-$('saveP').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(dump())]));a.download='project.json';a.click()};
+$('saveP').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify((()=>{const d=dump();['pxKey','gKey','plKey'].forEach(k=>delete d[k]);return d})())]));a.download='project.json';a.click()};
 $('loadP').onchange=async e=>{try{load(JSON.parse(await e.target.files[0].text()));save();setSize();ui();msg('تم فتح المشروع، اضغط جهّز المشاهد.')}catch{msg('ملف مشروع غير صالح',1)}};
 function ui(){const p=$('path').value,m=$('audioMode').value;
   $('vbox').hidden=m!=='voice';$('lblAm').hidden=p==='audio';
@@ -197,6 +208,7 @@ function ui(){const p=$('path').value,m=$('audioMode').value;
   document.querySelectorAll('[data-path]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.path===p));
   $('lblPx').hidden=$('nStock').hidden=$('src').value!=='stock';$('lblSt').hidden=$('src').value!=='ai';
   $('st2').className=p==='audio'?'audio':'';
+  const eg=$('sttEng').value;$('lblWh').hidden=eg!=='whisper';$('liveBox').hidden=eg!=='live';$('stt').hidden=eg==='live';$('lblPl').hidden=$('nAI').hidden=$('src').value!=='ai';
   $('lblT').textContent={text:'اكتب نصك (كل سطر = مشهد)',audio:'النص المستخرج من الصوت (راجعه وعدّله)',idea:'النص المكتوب (راجعه وعدّله)',images:'تعليق لكل صورة (اختياري، كل سطر = مشهد)'}[p]||'النص'}
 const setSize=()=>{const[w,h]=$('size').value.split('x').map(Number);cv.width=w;cv.height=h;idle()};
 function idle(){ctx.fillStyle='#14201f';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#9fb3b0';ctx.font='32px sans-serif';ctx.textAlign='center';ctx.fillText('اضغط معاينة',cv.width/2,cv.height/2)}
@@ -222,8 +234,7 @@ async function stockUrls(q){
   return Object.values(r.query?.pages||{}).map(p=>p.imageinfo?.[0]?.thumburl).filter(Boolean)}
 async function fetchImg(s){
   const m=$('src').value,q=s.prompt||s.text;
-  if(m==='ai'){const[W,H]=$('size').value.split('x');
-    return loadImg(`https://image.pollinations.ai/prompt/${encodeURIComponent(q+', '+$('style').value)}?width=${W}&height=${H}&nologo=true&seed=${Math.random()*1e5|0}`,true)}
+  if(m==='ai')return aiImg(q+', '+$('style').value);
   if(m==='stock'){const u=await stockUrls(q);if(!u.length)throw 0;s.n=(s.n||0)+1;return loadImg(u[(s.n-1)%u.length],true)}
   return null}
 const thumb=i=>{const t=document.querySelector(`.card[data-i="${i}"] .th`);if(t)t.innerHTML=scenes[i].img?`<img src="${scenes[i].img.src}" alt="">`:'<span>بدون صورة</span>'};
@@ -251,8 +262,9 @@ $('clr').onclick=()=>{scenes.forEach(s=>{s.img=null;s.tried=0});render()};
 let pollOK=true;
 const tmo=(u,ms=9000)=>{const c=new AbortController();setTimeout(()=>c.abort(),ms);return fetch(u,{signal:c.signal})};
 async function toPrompt(t){
-  if(pollOK)try{const x=(await(await tmo('https://text.pollinations.ai/'+encodeURIComponent('Write one short English image prompt (max 20 words, only a visual description, no quotes) illustrating this Arabic sentence: '+t))).text()).trim();if(x&&x.length<300&&x[0]!=='{')return x}catch{pollOK=false}
-  try{return(await(await tmo('https://api.mymemory.translated.net/get?q='+encodeURIComponent(t)+'&langpair=ar|en')).json()).responseData.translatedText}catch{}
+  if($('gKey').value.trim())try{const x=(await gemini([{text:'Write one short English image-generation prompt (max 20 words, visual description only, no quotes, no text in the image) for this Arabic video sentence: '+t}])).trim();if(!bad(x))return x}catch{}
+  if(pollOK)try{const r=await tmo('https://gen.pollinations.ai/text/'+encodeURIComponent('Write one short English image prompt (max 20 words, only a visual description, no quotes) illustrating this Arabic sentence: '+t));if(!r.ok)throw 0;const x=(await r.text()).trim();if(!bad(x))return x;pollOK=false}catch{pollOK=false}
+  try{const x=(await(await tmo('https://api.mymemory.translated.net/get?q='+encodeURIComponent(t)+'&langpair=ar|en')).json()).responseData.translatedText;if(!bad(x))return x}catch{}
   return ''}
 function toSentences(ch,total){
   const P=[];
@@ -278,7 +290,7 @@ $('stt').onclick=async()=>{
     for(let i=0;i<M.length;i++){msg(`تجهيز وصف الصورة ${i+1} من ${M.length}...`);M[i].p=await toPrompt(M[i].text)}
     $('script').value=M.map(m=>m.text+(m.p?' | '+m.p:'')).join('\n');
     tm=M.map(m=>m.t0);tm[0]=0;tmFor=$('script').value;save();
-    scenes=[];await build();
+    scenes=[];await build(true);
     msg('تم استخراج '+M.length+' مشهد وتجهيز صورها. راجع النص في الأعلى ثم اضغط «التالي».')
   }catch(e){msg(e.message||'فشل الاستخراج. جرّب النموذج الأسرع أو صوتًا أقصر.',1)}
   busy=false;lock(false)};
@@ -377,7 +389,11 @@ async function go(n){
   document.querySelectorAll('.step').forEach((e,i)=>e.hidden=i!==cur);
   document.querySelectorAll('#stepper button').forEach((b,i)=>{if(i===cur)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
   window.scrollTo({top:0});
-  if(cur===4&&$('script').value.trim()&&$('script').value!==last){busy=true;lock(true);try{await build()}catch(e){msg(e.message,1)}busy=false;lock(false)}
+  if(cur===4&&$('script').value.trim()){
+    const slow=$('src').value==='ai'&&!$('plKey').value.trim();busy=true;lock(true);
+    try{await build(slow)}catch(e){msg(e.message,1)}
+    busy=false;lock(false);
+    if(slow){const m=scenes.filter(s=>!s.img&&!s.tried).length;if(m)msg(`المشاهد جاهزة. اضغط «جلب الصور الناقصة» لتوليد ${m} صورة، وتستغرق حوالي ${Math.ceil(m*42/60)} دقيقة بسبب حد الخدمة المجانية.`)}}
   if(cur===5)summary()}
 $('stepper').onclick=e=>{const b=e.target.closest('[data-go]');if(b)go(+b.dataset.go)};
 document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>go(cur+ +b.dataset.nav));
@@ -404,12 +420,89 @@ $('gen').onclick=async()=>{
   if(busy)return;busy=true;lock(true);msg('جاري كتابة النص...');
   try{
     const q=`اكتب نص فيديو باللغة العربية عن: ${t}. الأسلوب: ${$('tone').value}. اكتب ${n} أسطر بالضبط، كل سطر جملة عربية قصيرة وواضحة (حتى 20 كلمة) ثم العلامة | ثم وصف إنجليزي قصير للصورة المناسبة. بدون ترقيم أو عناوين أو أي شرح.`;
-    const x=await(await tmo('https://text.pollinations.ai/'+encodeURIComponent(q),40000)).text();
+    const x=await textAI(q);
     const L=x.split('\n').map(l=>l.replace(/^[\s\d\-\*\.\)•]+/,'').trim()).filter(l=>l.includes('|')).slice(0,n);
     if(L.length<2)throw 0;
     $('script').value=L.join('\n');save();msg('تمت كتابة النص. راجعه وعدّله إن أردت ثم اضغط «التالي».')
-  }catch{msg('تعذر توليد النص الآن (الخدمة المجانية مشغولة). حاول بعد قليل أو اكتب النص بنفسك.',1)}
+  }catch{msg('تعذر توليد النص الآن. أضف مفتاح Gemini المجاني (أعلى الخطوة) للحصول على نتيجة موثوقة، أو اكتب النص بنفسك.',1)}
   busy=false;lock(false)};
+/* Google Gemini و Chrome المباشر والطابور */
+const bad=x=>!x||x.length>300||/free limit|rate limit|please wait|pollen|error/i.test(x)||x[0]==='{';
+async function gemini(parts,json){
+  const k=$('gKey').value.trim();if(!k)throw new Error('أضف مفتاح Gemini المجاني أولًا (الرابط في أعلى الخطوة)');
+  const m=$('gModel').value.trim()||'gemini-flash-latest';
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':k},
+    body:JSON.stringify({contents:[{parts}],generationConfig:json?{temperature:0,responseMimeType:'application/json'}:{temperature:.8}})});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(r.status===429?'تجاوزت الحد المجاني لـ Gemini مؤقتًا، انتظر دقيقة وأعد المحاولة.':(r.status===400||r.status===403)?'مفتاح Gemini غير صالح أو اسم النموذج خاطئ.':(d.error?.message||'خطأ '+r.status).slice(0,160));
+  return(d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('')}
+async function textAI(q){
+  if($('gKey').value.trim())return gemini([{text:q}]);
+  const r=await tmo('https://gen.pollinations.ai/text/'+encodeURIComponent(q),40000);if(!r.ok)throw 0;
+  const x=await r.text();if(/free limit|rate limit|please wait/i.test(x))throw 0;return x}
+let aiLast=0;
+async function aiImg(q){
+  const[W,H]=$('size').value.split('x'),k=$('plKey').value.trim();
+  const url=`https://gen.pollinations.ai/image/${encodeURIComponent(q)}?model=flux&width=${W}&height=${H}&nologo=true&seed=${Math.random()*1e5|0}`+(k?`&key=${encodeURIComponent(k)}`:'');
+  for(let a=0;a<3;a++){
+    const w=aiLast+(k?2000:42000)-Date.now();
+    for(let s=Math.ceil(w/1000);s>0;s--){msg(`حد الخدمة المجانية: صورة كل 40 ثانية تقريبًا. الصورة التالية بعد ${s} ث...`);await new Promise(r=>setTimeout(r,1000))}
+    aiLast=Date.now();
+    try{const r=await fetch(url);if(r.ok){const b=await r.blob();if(b.type.startsWith('image/'))return loadImg(URL.createObjectURL(b))}}catch{}
+  }
+  throw 0}
+const sec=x=>typeof x==='number'?x:String(x).split(':').map(Number).reduce((a,b)=>a*60+b,0)||0;
+const mergeShort=P=>{const M=[];for(const p of P){const l=M[M.length-1];if(l&&p.t0-l.t0<2.5)l.text+=' '+p.text;else M.push({...p})}return M};
+async function applyLines(M){
+  for(let i=0;i<M.length;i++)if(!M[i].p){msg(`تجهيز وصف الصورة ${i+1} من ${M.length}...`);M[i].p=await toPrompt(M[i].text)}
+  $('script').value=M.map(m=>m.text+(m.p?' | '+m.p:'')).join('\n');
+  tm=M.map(m=>m.t0);tm[0]=0;tmFor=$('script').value;save();scenes=[];await build(true);
+  msg('تم استخراج '+M.length+' مشهد. راجع النص في الأعلى ثم اضغط «التالي».')}
+async function pcm16k(){const oc=new OfflineAudioContext(1,Math.ceil(voice.duration*16000),16000),s=oc.createBufferSource();s.buffer=voice;s.connect(oc.destination);s.start();return(await oc.startRendering()).getChannelData(0)}
+function toWav(f){
+  const n=f.length,b=new ArrayBuffer(44+n*2),v=new DataView(b),w=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));
+  w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,16000,true);v.setUint32(28,32000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++){const x=Math.max(-1,Math.min(1,f[i]));v.setInt16(44+i*2,x<0?x*32768:x*32767,true)}
+  return b}
+function b64(buf){let s='';const u=new Uint8Array(buf);for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)}
+const GP=`Transcribe this Arabic speech accurately (it may be Egyptian dialect; keep the speaker's own words, do not translate or invent). Write in Arabic script with correct spelling and punctuation. Split it into short meaningful sentences of about 3 to 12 seconds each. Return ONLY a JSON array, no other text. Each item: {"start": seconds where the sentence begins (number), "text": "the Arabic sentence", "image": "short English image-generation prompt (max 20 words) illustrating the sentence visually"}.`;
+const sttWh=$('stt').onclick;
+$('stt').onclick=async()=>{
+  if($('sttEng').value!=='gem')return sttWh();
+  if(busy)return;if(!voice)return msg('ارفع ملف الصوت أو سجّله أولًا',1);
+  if(!$('gKey').value.trim())return msg('أضف مفتاح Gemini المجاني أولًا، أو اختر طريقة أخرى للاستخراج.',1);
+  if(voice.duration>540)return msg('الصوت أطول من 9 دقائق، قسّمه إلى أجزاء أقصر.',1);
+  busy=true;lock(true);
+  try{
+    msg('جاري إرسال الصوت إلى Google Gemini... قد يستغرق دقيقة');
+    const t=await gemini([{inline_data:{mime_type:'audio/wav',data:b64(toWav(await pcm16k()))}},{text:GP}],true);
+    let a=JSON.parse(t.replace(/```json|```/g,'').trim());if(!Array.isArray(a))a=a.segments||a.sentences||[];
+    const M=a.filter(x=>x&&x.text).map(x=>({text:String(x.text).trim(),t0:sec(x.start),p:String(x.image||'').trim()})).sort((x,y)=>x.t0-y.t0);
+    if(!M.length)throw new Error('لم يُستخرج نص. تأكد أن الصوت واضح.');
+    await applyLines(M)
+  }catch(e){msg(e instanceof SyntaxError?'رد Gemini غير مفهوم، أعد المحاولة.':(e.message||'فشل الاستخراج'),1)}
+  busy=false;lock(false)};
+let live=null;
+$('live').onclick=async()=>{
+  if(live)return live();
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return msg('هذه الطريقة تعمل في Chrome أو Edge فقط. استخدم Gemini أو Whisper.',1);
+  let st;try{st=await navigator.mediaDevices.getUserMedia({audio:true})}catch{return msg('تعذر الوصول إلى الميكروفون',1)}
+  const ch=[],P=[],rec=new MediaRecorder(st),t0=performance.now(),r=new SR();let lastEnd=0,on=true;
+  rec.ondataavailable=e=>ch.push(e.data);rec.start();
+  r.lang=$('liveLang').value;r.continuous=true;r.interimResults=false;
+  r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal){const tx=e.results[i][0].transcript.trim();if(tx){P.push({text:tx,t0:lastEnd});lastEnd=(performance.now()-t0)/1000;$('liveTxt').textContent=P.map(m=>m.text).join(' ')}}};
+  r.onend=()=>{if(on)try{r.start()}catch{}};
+  r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){on=false;msg('تم رفض إذن الميكروفون أو التعرف على الكلام',1)}};
+  live=async()=>{
+    on=false;live=null;r.stop();await new Promise(z=>{rec.onstop=z;rec.stop()});st.getTracks().forEach(t=>t.stop());
+    $('live').textContent='ابدأ التكلم (يكتب ويسجّل)';
+    if(!P.length)return msg('لم يُلتقط كلام. تحدّث بوضوح وأعد المحاولة.',1);
+    busy=true;lock(true);
+    try{voice=await decode(new Blob(ch));await applyLines(mergeShort(P))}catch(e){msg(e.message||'حدث خطأ',1)}
+    busy=false;lock(false)};
+  r.start();$('live').textContent='إيقاف وإنهاء التسجيل';$('liveTxt').textContent='';msg('تكلّم الآن... يظهر نصك أدناه أثناء كلامك.')};
+$('sttEng').onchange=ui;
 ui();
 </script>
 </body>
